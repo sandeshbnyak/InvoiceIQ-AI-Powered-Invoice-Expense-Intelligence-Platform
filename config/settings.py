@@ -19,6 +19,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _env_int(name, default):
+    value = os.getenv(name, '').strip()
+    return int(value) if value else default
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -144,7 +149,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-MAX_UPLOAD_SIZE_MB = int(os.getenv('MAX_UPLOAD_SIZE_MB', '10'))
+MAX_UPLOAD_SIZE_MB = _env_int('MAX_UPLOAD_SIZE_MB', 10)
 LLM_API_KEY = os.getenv('LLM_API_KEY', '')
 LLM_BASE_URL = os.getenv('LLM_BASE_URL', '')
 LLM_MODEL = os.getenv('LLM_MODEL', 'gpt-4o-mini')
@@ -161,7 +166,7 @@ MAILERS = {
     'default': {
         'BACKEND': os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'),
         'HOST': os.getenv('EMAIL_HOST', ''),
-        'PORT': int(os.getenv('EMAIL_PORT', '587')),
+        'PORT': _env_int('EMAIL_PORT', 587),
         'USERNAME': os.getenv('EMAIL_HOST_USER', ''),
         'PASSWORD': os.getenv('EMAIL_HOST_PASSWORD', ''),
         'USE_TLS': os.getenv('EMAIL_USE_TLS', 'True').lower() in {'1', 'true', 'yes', 'on'},
@@ -172,6 +177,6 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_SECONDS = _env_int('SECURE_HSTS_SECONDS', 31536000)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
