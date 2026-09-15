@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Sign in | InvoiceIQ{% endblock %}
+{% block body %}
+<div class="auth-page">
+  <div class="auth-panel">
+    <div class="brand-mark"><span class="brand-dot"></span> InvoiceIQ</div>
+    <div class="auth-copy">
+      <p class="eyebrow">Finance intelligence</p>
+      <h1>See the signal<br>in every invoice.</h1>
+      <p>Bring your financial documents into focus with extraction, validation, and risk intelligence in one quiet workspace.</p>
+    </div>
+    <div class="auth-foot">AI-assisted. Human-reviewable. Built for clarity.</div>
+  </div>
+  <div class="auth-form-wrap">
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      <div class="mobile-brand brand-mark"><span class="brand-dot"></span> InvoiceIQ</div>
+      <p class="eyebrow">Welcome back</p>
+      <h2>Sign in to your workspace</h2>
+      {% if form.errors %}<div class="form-alert">Your username or password was not recognised.</div>{% endif %}
+      <label for="id_username">Username</label>
+      <input class="form-control" type="text" name="username" id="id_username" autofocus required>
+      <label for="id_password">Password</label>
+      <input class="form-control" type="password" name="password" id="id_password" required>
+      <button class="btn btn-primary w-100 mt-3" type="submit">Continue <i class="bi bi-arrow-up-right"></i></button>
+      <p class="auth-switch">New to InvoiceIQ? <a href="{% url 'register' %}">Create an account</a></p>
+    </form>
+  </div>
+</div>
+{% endblock %}

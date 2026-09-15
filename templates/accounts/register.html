@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}Create account | InvoiceIQ{% endblock %}
+{% block body %}
+<div class="auth-page">
+  <div class="auth-panel"><div class="brand-mark"><span class="brand-dot"></span> InvoiceIQ</div><div class="auth-copy"><p class="eyebrow">A clearer finance workspace</p><h1>Turn documents<br>into decisions.</h1><p>Start with a secure workspace for invoices, spending, and the details that deserve a closer look.</p></div><div class="auth-foot">Your financial workspace, kept focused.</div></div>
+  <div class="auth-form-wrap"><form method="post" class="auth-form"><div class="mobile-brand brand-mark"><span class="brand-dot"></span> InvoiceIQ</div><p class="eyebrow">Get started</p><h2>Create your workspace</h2>{% csrf_token %}{% if form.errors %}<div class="form-alert">Please check the highlighted fields and try again.</div>{% endif %}{% for field in form %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<small class="field-error">{{ field.errors|striptags }}</small>{% endif %}{% endfor %}<button class="btn btn-primary w-100 mt-3" type="submit">Create account <i class="bi bi-arrow-up-right"></i></button><p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Sign in</a></p></form></div>
+</div>
+{% endblock %}

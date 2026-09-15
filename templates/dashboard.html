@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Overview | InvoiceIQ{% endblock %}
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark"><span class="brand-dot"></span> InvoiceIQ</div>
+    <div class="workspace-label">Workspace</div>
+    <nav class="side-nav">
+      <a class="active" href="{% url 'dashboard' %}"><i class="bi bi-grid-1x2-fill"></i> Overview</a>
+      <a href="{% url 'invoice_upload' %}"><i class="bi bi-file-earmark-text"></i> Invoices</a>
+      <a href="{% url 'vendors' %}"><i class="bi bi-buildings"></i> Vendors</a>
+      <a href="{% url 'expenses' %}"><i class="bi bi-wallet2"></i> Expenses</a>
+      <a href="{% url 'analytics' %}"><i class="bi bi-bar-chart-line"></i> Analytics</a>
+      <a href="{% url 'risk-alerts' %}"><i class="bi bi-shield-exclamation"></i> Risk alerts <span class="nav-count">{{ alerts|length }}</span></a>
+    </nav>
+    <div class="side-bottom">
+      <a href="{% url 'ai-assistant' %}"><i class="bi bi-stars"></i> AI assistant</a>
+      <a href="#"><i class="bi bi-gear"></i> Settings</a>
+      <div class="profile-mini"><div class="avatar">{{ user.username|first|upper }}</div><div><strong>{{ user.username }}</strong><small>Analyst</small></div><a href="{% url 'logout' %}" class="logout-link" title="Sign out"><i class="bi bi-box-arrow-right"></i></a></div>
+    </div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation"><i class="bi bi-list"></i></button>
+      <div class="breadcrumb"><span>Workspace</span><i class="bi bi-chevron-right"></i><strong>Overview</strong></div>
+      <div class="top-actions"><button class="icon-btn"><i class="bi bi-search"></i></button><button class="icon-btn notification"><i class="bi bi-bell"></i><span></span></button><div class="avatar">{{ user.username|first|upper }}</div></div>
+    </header>
+    <section class="page-content">
+      <div class="page-heading"><div><p class="eyebrow">Tuesday, September 15, 2026</p><h1>Financial overview</h1><p class="page-subtitle">Monitor invoices, expenses, vendors, and financial risks.</p></div><a class="btn btn-primary" href="{% url 'invoice_upload' %}"><i class="bi bi-plus-lg"></i> Upload invoice</a></div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-top"><span>Total invoices</span><i class="bi bi-file-earmark-check"></i></div><strong>{{ invoice_count }}</strong><small class="trend neutral">All processed documents</small></div>
+        <div class="kpi-card accent"><div class="kpi-top"><span>Total spending</span><i class="bi bi-arrow-down-right"></i></div><strong>₹{{ spending_total|floatformat:0 }}</strong><small class="trend up"><i class="bi bi-arrow-up"></i> 12.4% <em>vs last month</em></small></div>
+        <div class="kpi-card"><div class="kpi-top"><span>Total tax</span><i class="bi bi-receipt"></i></div><strong>₹{{ tax_total|floatformat:0 }}</strong><small class="trend neutral">Across all invoices</small></div>
+        <div class="kpi-card"><div class="kpi-top"><span>Total vendors</span><i class="bi bi-buildings"></i></div><strong>{{ vendor_count }}</strong><small class="trend neutral">Active relationships</small></div>
+      </div>
+      <div class="analytics-grid">
+        <section class="surface chart-card"><div class="surface-head"><div><p class="eyebrow">Cash flow</p><h2>Monthly spending</h2></div><button class="select-btn">Last 12 months <i class="bi bi-chevron-down"></i></button></div><div class="chart-wrap"><canvas id="spendingChart"></canvas></div></section>
+        <section class="surface chart-card category-card"><div class="surface-head"><div><p class="eyebrow">Distribution</p><h2>Expense categories</h2></div><button class="icon-btn"><i class="bi bi-three-dots"></i></button></div><div class="donut-wrap"><canvas id="categoryChart"></canvas><div class="donut-center"><strong>100%</strong><span>tracked</span></div></div><div class="legend-list" id="categoryLegend"></div></section>
+      </div>
+      <div class="lower-grid">
+        <section class="surface invoices-card"><div class="surface-head"><div><p class="eyebrow">Document flow</p><h2>Recent invoices</h2></div><a href="{% url 'invoice_upload' %}" class="text-link">View all <i class="bi bi-arrow-up-right"></i></a></div><div class="table-scroll"><table class="invoice-table"><thead><tr><th>Invoice</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Status</th><th>Risk</th></tr></thead><tbody>{% for invoice in recent_invoices %}<tr><td><a href="{% url 'invoice_detail' invoice.pk %}" class="invoice-number">{{ invoice.invoice_number|default:'Pending extraction' }}</a></td><td>{{ invoice.vendor.name|default:'Unidentified vendor' }}</td><td>{{ invoice.invoice_date|date:'d M Y'|default:'—' }}</td><td class="amount">₹{{ invoice.total_amount|floatformat:0|default:'0' }}</td><td><span class="status-pill {{ invoice.status }}">{{ invoice.get_status_display }}</span></td><td><span class="risk-dot {% if invoice.risk_score > 60 %}high{% elif invoice.risk_score > 30 %}medium{% else %}low{% endif %}">{{ invoice.risk_score|default:'—' }}</span></td></tr>{% empty %}<tr><td colspan="6" class="empty-state">Your invoice stream will appear here after your first upload.</td></tr>{% endfor %}</tbody></table></div></section>
+        <section class="surface alerts-card"><div class="surface-head"><div><p class="eyebrow">Needs attention</p><h2>Risk alerts</h2></div><span class="alert-count">{{ alerts|length }}</span></div><div class="alert-list">{% for alert in alerts %}<div class="alert-item"><span class="severity {{ alert.severity }}"></span><div class="alert-copy"><strong>{{ alert.get_anomaly_type_display }}</strong><span>{{ alert.invoice.vendor.name|default:'Unknown vendor' }} · ₹{{ alert.invoice.total_amount|floatformat:0|default:'0' }}</span></div><i class="bi bi-chevron-right"></i></div>{% empty %}<div class="empty-alert"><i class="bi bi-shield-check"></i><strong>No active risk alerts</strong><span>Validated invoices will stay quiet here.</span></div>{% endfor %}</div></section>
+      </div>
+    </section>
+  </main>
+</div>
+{{ monthly_labels|json_script:'monthly-labels' }}{{ monthly_values|json_script:'monthly-values' }}{{ category_labels|json_script:'category-labels' }}{{ category_values|json_script:'category-values' }}
+{% endblock %}
+{% block extra_scripts %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="{% static 'js/dashboard.js' %}"></script>{% endblock %}

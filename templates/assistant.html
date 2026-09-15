@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}AI Assistant | InvoiceIQ{% endblock %}
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand-mark"><span class="brand-dot"></span> InvoiceIQ</div>
+    <div class="workspace-label">Workspace</div>
+    <nav class="side-nav">
+      <a href="{% url 'dashboard' %}"><i class="bi bi-grid-1x2-fill"></i> Overview</a>
+      <a href="{% url 'invoice_upload' %}"><i class="bi bi-file-earmark-text"></i> Invoices</a>
+      <a class="active" href="{% url 'ai-assistant' %}"><i class="bi bi-stars"></i> AI assistant</a>
+    </nav>
+    <div class="side-bottom"><div class="profile-mini"><div class="avatar">{{ user.username|first|upper }}</div><div><strong>{{ user.username }}</strong><small>Analyst</small></div><a href="{% url 'logout' %}" class="logout-link" title="Sign out"><i class="bi bi-box-arrow-right"></i></a></div></div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar"><div class="breadcrumb"><span>Workspace</span><i class="bi bi-chevron-right"></i><strong>AI assistant</strong></div></header>
+    <section class="page-content narrow-content">
+      <div class="page-heading"><div><p class="eyebrow">Read-only intelligence</p><h1>Ask InvoiceIQ</h1><p class="page-subtitle">Explore your finance data with safe, user-scoped questions.</p></div></div>
+      <section class="surface detail-card">
+        <div id="answer" class="assistant-answer"><i class="bi bi-stars"></i><span>Ask about cloud spending, top vendors, high-value invoices, or duplicate invoices.</span></div>
+        <form id="assistant-form" class="assistant-form">{% csrf_token %}<label for="question">Your question</label><div class="assistant-input"><input id="question" name="question" autocomplete="off" placeholder="How much did we spend on cloud services?" required><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-up"></i> Ask</button></div></form>
+        <div class="assistant-prompts"><button type="button" data-question="Which vendor received the highest payment?">Top vendor</button><button type="button" data-question="Show invoices above ₹1 lakh.">High-value invoices</button><button type="button" data-question="Which invoices are potentially duplicated?">Duplicate alerts</button></div>
+      </section>
+    </section>
+  </main>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+const form = document.getElementById('assistant-form');
+const input = document.getElementById('question');
+const answer = document.getElementById('answer');
+const csrfToken = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='))?.split('=')[1];
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  answer.textContent = 'Working...';
+  const response = await fetch('{% url "api-ai-query" %}', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || ''}, body: JSON.stringify({question: input.value})});
+  const data = await response.json();
+  answer.textContent = data.answer || 'No answer available.';
+});
+document.querySelectorAll('[data-question]').forEach((button) => button.addEventListener('click', () => { input.value = button.dataset.question; input.focus(); }));
+</script>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }} | InvoiceIQ{% endblock %}
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand-mark"><span class="brand-dot"></span> InvoiceIQ</div>
+    <div class="workspace-label">Workspace</div>
+    <nav class="side-nav">
+      <a href="{% url 'dashboard' %}"><i class="bi bi-grid-1x2-fill"></i> Overview</a>
+      <a href="{% url 'invoice_upload' %}"><i class="bi bi-file-earmark-text"></i> Invoices</a>
+      <a class="{% if active_page == 'vendors' %}active{% endif %}" href="{% url 'vendors' %}"><i class="bi bi-buildings"></i> Vendors</a>
+      <a class="{% if active_page == 'expenses' %}active{% endif %}" href="{% url 'expenses' %}"><i class="bi bi-wallet2"></i> Expenses</a>
+      <a class="{% if active_page == 'analytics' %}active{% endif %}" href="{% url 'analytics' %}"><i class="bi bi-bar-chart-line"></i> Analytics</a>
+      <a class="{% if active_page == 'risk' %}active{% endif %}" href="{% url 'risk-alerts' %}"><i class="bi bi-shield-exclamation"></i> Risk alerts <span class="nav-count">{{ alerts|length }}</span></a>
+    </nav>
+    <div class="side-bottom"><a href="{% url 'ai-assistant' %}"><i class="bi bi-stars"></i> AI assistant</a><div class="profile-mini"><div class="avatar">{{ user.username|first|upper }}</div><div><strong>{{ user.username }}</strong><small>Analyst</small></div><a href="{% url 'logout' %}" class="logout-link" title="Sign out"><i class="bi bi-box-arrow-right"></i></a></div></div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar"><div class="breadcrumb"><span>Workspace</span><i class="bi bi-chevron-right"></i><strong>{{ page_title }}</strong></div></header>
+    <section class="page-content">
+      <div class="page-heading"><div><p class="eyebrow">Workspace intelligence</p><h1>{{ page_title }}</h1><p class="page-subtitle">{{ page_subtitle }}</p></div>{% if active_page == 'vendors' or active_page == 'expenses' %}<a class="btn btn-primary" href="{% url 'invoice_upload' %}"><i class="bi bi-plus-lg"></i> Upload invoice</a>{% endif %}</div>
+      {% if active_page == 'vendors' %}
+      <section class="surface detail-card"><div class="surface-head"><h2>Vendor relationships</h2><span class="alert-count">{{ vendors|length }}</span></div><div class="table-scroll"><table class="invoice-table"><thead><tr><th>Vendor</th><th>GSTIN</th><th>Email</th><th>Invoices</th><th>Total paid</th></tr></thead><tbody>{% for vendor in vendors %}<tr><td class="invoice-number">{{ vendor.name }}</td><td>{{ vendor.gstin|default:'—' }}</td><td>{{ vendor.email|default:'—' }}</td><td>{{ vendor.invoice_count }}</td><td class="amount">₹{{ vendor.total_paid|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="5" class="empty-state">No vendors have been identified yet.</td></tr>{% endfor %}</tbody></table></div></section>
+      {% elif active_page == 'expenses' %}
+      <section class="surface detail-card"><div class="surface-head"><h2>Expense ledger</h2><span class="alert-count">{{ expenses|length }}</span></div><div class="table-scroll"><table class="invoice-table"><thead><tr><th>Description</th><th>Category</th><th>Date</th><th>Invoice</th><th>Amount</th></tr></thead><tbody>{% for expense in expenses %}<tr><td>{{ expense.description }}</td><td><span class="status-pill processed">{{ expense.get_category_display }}</span></td><td>{{ expense.expense_date|date:'d M Y' }}</td><td><a class="invoice-number" href="{% url 'invoice_detail' expense.invoice_id %}">{{ expense.invoice.invoice_number|default:'—' }}</a></td><td class="amount">₹{{ expense.amount|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="5" class="empty-state">No expenses have been recorded yet.</td></tr>{% endfor %}</tbody></table></div></section>
+      {% elif active_page == 'analytics' %}
+      <div class="kpi-grid"><div class="kpi-card accent"><div class="kpi-top"><span>Total spending</span><i class="bi bi-arrow-down-right"></i></div><strong>₹{{ spending_total|floatformat:0 }}</strong><small class="trend neutral">Recorded expenses</small></div><div class="kpi-card"><div class="kpi-top"><span>Total tax</span><i class="bi bi-receipt"></i></div><strong>₹{{ tax_total|floatformat:0 }}</strong><small class="trend neutral">Across invoices</small></div></div><div class="lower-grid"><section class="surface detail-card"><div class="surface-head"><h2>Monthly spending</h2></div><div class="table-scroll"><table class="invoice-table"><thead><tr><th>Month</th><th>Total</th></tr></thead><tbody>{% for row in monthly %}<tr><td>{{ row.month|date:'F Y' }}</td><td class="amount">₹{{ row.total|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="2" class="empty-state">No monthly data yet.</td></tr>{% endfor %}</tbody></table></div></section><section class="surface detail-card"><div class="surface-head"><h2>Category distribution</h2></div><div class="table-scroll"><table class="invoice-table"><thead><tr><th>Category</th><th>Total</th></tr></thead><tbody>{% for row in categories %}<tr><td>{{ row.category|title }}</td><td class="amount">₹{{ row.total|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="2" class="empty-state">No category data yet.</td></tr>{% endfor %}</tbody></table></div></section></div>
+      {% else %}
+      <section class="surface detail-card"><div class="surface-head"><h2>Risk alerts</h2><span class="alert-count">{{ alerts|length }}</span></div><div class="alert-list">{% for alert in alerts %}<div class="alert-item"><span class="severity {{ alert.severity }}"></span><div class="alert-copy"><strong>{{ alert.get_anomaly_type_display }}</strong><span>{{ alert.description }}</span><small>{{ alert.invoice.vendor.name|default:'Unknown vendor' }} · {{ alert.invoice.invoice_number|default:'Pending extraction' }}</small></div><span class="risk-dot {% if alert.score > 60 %}high{% elif alert.score > 30 %}medium{% else %}low{% endif %}">{{ alert.score }}</span></div>{% empty %}<div class="empty-alert"><i class="bi bi-shield-check"></i><strong>No active risk alerts</strong><span>Validated invoices stay quiet here.</span></div>{% endfor %}</div></section>
+      {% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}
