@@ -24,6 +24,7 @@ InvoiceIQ is a Django-based invoice and expense intelligence platform. It combin
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+pip install -r requirements-ai.txt  # optional local AI/data-science tooling
 python manage.py migrate
 python manage.py runserver
 ```
@@ -93,3 +94,5 @@ python manage.py test
 ```
 
 The test suite covers user isolation, upload validation, OCR failure states, structured extraction, line-item classification, risk scoring, analytics APIs, assistant safety, and demo-data seeding.
+
+`requirements.txt` contains the deployable runtime dependencies. `requirements-ai.txt` keeps optional Pandas and Sentence Transformers tooling out of serverless bundles; install it locally only when extending the ML pipeline.
