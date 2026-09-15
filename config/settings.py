@@ -37,7 +37,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'local-development-secret-key-change-this-b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() in {'1', 'true', 'yes', 'on'}
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
+allowed_hosts_value = os.getenv('ALLOWED_HOSTS', '').strip()
+ALLOWED_HOSTS = (
+    [host.strip() for host in allowed_hosts_value.split(',') if host.strip()]
+    if allowed_hosts_value
+    else ['127.0.0.1', 'localhost', '.vercel.app']
+)
 
 
 # Application definition
