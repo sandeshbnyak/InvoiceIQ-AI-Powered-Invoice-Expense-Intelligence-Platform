@@ -61,14 +61,12 @@ def _extract_scanned_pdf(path):
 
 def _extract_image_text(path):
     try:
-        import cv2
         import pytesseract
+        from PIL import Image, ImageOps
+
         _configure_tesseract()
-        image = cv2.imread(str(path))
-        if image is None:
-            raise ValueError('Invalid image')
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        prepared = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+        image = Image.open(path).convert('L')
+        prepared = ImageOps.autocontrast(image).point(lambda pixel: 255 if pixel > 180 else 0)
         return pytesseract.image_to_string(prepared)
     except Exception as exc:
         raise DocumentProcessingError('OCR could not process the image.') from exc
